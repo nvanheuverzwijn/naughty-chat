@@ -2,6 +2,9 @@ import socket
 import os
 import select
 import sys
+import commands
+import parsers
+import string
 
 class Server(object):
 	"""The chat server. It relays communication between client."""
@@ -41,23 +44,14 @@ class Server(object):
 	def buffer_size(self, value):
 		self._buffer_size = value
 
-	def __init__(self, port=9999, bind="0.0.0.0", buffer_size=4096):
+	def __init__(self, port=9999, bind="0.0.0.0", buffer_size=4096, parser=None):
 		self.port = port
-		self.bind = "0.0.0.0"
-		self.buffer_size = 4096
-	
-	def broadcast(self, socket_origine, message):
-		"""
-		socket_origine: The socket that wants to broadcast
-		message       : The message that @socket_origine wants to broadcast
-		"""
-		for socket in self.socket_list:
-			if socket != self.server_socket and socket != socket_origine:
-				try:
-					socket.sendall(message)
-				except:
-					socket.close()
-					self._socket_list.remove(socket)
+		self.bind = bind
+		self.buffer_size = buffer_size
+		if parser is not None:
+			klass = getattr(parsers, parser)
+			if klass is not None:
+				self.parser = klass()
 	
 	def listen(self):
 		self._server_socket = socket.socket(socket.AF_INET) 
@@ -68,13 +62,27 @@ class Server(object):
 			inputready, outputready, exceptready = select.select(self.socket_list,[],[])
 			for sock in inputready:
 				if sock == self.server_socket:
-					client, address = self.server_socket.accept()
-					self._socket_list.append(client)
-					self.broadcast(client, "[%s:%s] entered room\n" % address)
+					self.__handle_new_connection()
 				else:
-					data = sock.recv(self.buffer_size)
-					if data:
-						self.broadcast(sock, data)
+					self.__handle_request(sock)
+	def __handle_new_connection(self):
+		client, address = self.server_socket.accept()
+		self.socket_list.append(client)
+		cmd = commands.Broadcast(self, client, "[%s:%s] entered room\n" % address)
+		cmd.execute()
+	def __handle_request(self, caller):
+		data = caller.recv(self.buffer_size)
+		if data:
+			cmd = self.parser.parse(data)
+			if not isinstance(cmd, commands.Command):
+				cmd = commands.Broadcast(self, caller, data)
+			else:
+				cmd.server = self
+				cmd.caller = caller
+				cmd.arguments = string.split(data, " ")
+			cmd.execute()
+
+
 
 if __name__ == "__main__":
 	import argparse
@@ -84,5 +92,5 @@ if __name__ == "__main__":
 
 	args = parser.parse_args()
 
-	s = Server()
+	s = Server(parser = "Standard")
 	s.listen()
