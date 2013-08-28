@@ -4,6 +4,7 @@ import select
 import sys
 import commands
 import parsers
+import clients
 import string
 
 class Server(object):
@@ -12,8 +13,8 @@ class Server(object):
 	_port = 9999
 	_bind = "0.0.0.0"
 	_server_socket = None
-	_socket_list = []
 	_buffer_size = 4096
+	_clients = []
 
 	@property
 	def port(self):
@@ -34,15 +35,15 @@ class Server(object):
 		return self._server_socket
 
 	@property
-	def socket_list(self):
-		return self._socket_list
-
-	@property
 	def buffer_size(self):
 		return self._buffer_size
 	@buffer_size.setter
 	def buffer_size(self, value):
 		self._buffer_size = value
+	
+	@property
+	def clients(self):
+		return self._clients
 
 	def __init__(self, port=9999, bind="0.0.0.0", buffer_size=4096, parser=None):
 		self.port = port
@@ -57,21 +58,22 @@ class Server(object):
 		self._server_socket = socket.socket(socket.AF_INET) 
 		self._server_socket.bind((self.bind, self.port))
 		self._server_socket.listen(10)
-		self._socket_list = [self._server_socket]
+
 		while True:
-			inputready, outputready, exceptready = select.select(self.socket_list,[],[])
+			inputready, outputready, exceptready = select.select(self.clients + [self.server_socket],[],[])
 			for sock in inputready:
 				if sock == self.server_socket:
 					self.__handle_new_connection()
 				else:
 					self.__handle_request(sock)
 	def __handle_new_connection(self):
-		client, address = self.server_socket.accept()
-		self.socket_list.append(client)
+		socket, address = self.server_socket.accept()
+		client = clients.Client(ip=address, protocol="RAW", socket=socket)
+		self.clients.append(client)
 		cmd = commands.Broadcast(self, client, "[%s:%s] entered room\n" % address)
 		cmd.execute()
 	def __handle_request(self, caller):
-		data = caller.recv(self.buffer_size)
+		data = caller.socket.recv(self.buffer_size)
 		if data:
 			cmd = self.parser.parse(data)
 			if not isinstance(cmd, commands.Command):

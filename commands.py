@@ -13,7 +13,7 @@ class Command(object):
 
 	@property
 	def caller(self):
-		"""The socket representing the caller of this command"""
+		"""The Client representing the caller of this command"""
 		return self._caller
 	@caller.setter
 	def caller(self, value):
@@ -42,8 +42,9 @@ class Exit(Command):
 	args:Takes no args
 	"""
 	def execute(self):
-		self.server.socket_list.remove(self.caller)
-		self.caller.close()
+		self.server.socket_list.remove(self.caller.socket)
+		self.server.clients.remove(self.caller)
+		self.caller.socket.close()
 
 class Broadcast(Command):
 	"""
@@ -51,10 +52,11 @@ class Broadcast(Command):
 	args[0]:The message to broadcast
 	"""
 	def execute(self):
-		for socket in self.server.socket_list:
-			if socket != self.server.server_socket and socket != self.caller:
+		for client in self.server.clients:
+			if client.socket != self.caller.socket:
 				try:
-					socket.sendall(self.arguments[0])
+					client.socket.sendall(self.arguments[0])
 				except Exception, e:
 					socket.close()
-					self.server.socket_list.remove(socket)
+					self.server.socket_list.remove(client.socket)
+					self.server.clients.remove(client)
