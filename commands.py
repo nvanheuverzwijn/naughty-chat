@@ -39,24 +39,39 @@ class Command(object):
 class Exit(Command):
 	"""
 	Remove the caller from the server socket list and close it's connection.
-	args:Takes no args
+	arguments:Takes no args
 	"""
 	def execute(self):
-		self.server.socket_list.remove(self.caller.socket)
 		self.server.clients.remove(self.caller)
 		self.caller.socket.close()
+
+class Rename(Command):
+	"""
+	Set the name of the caller to the specified argument.
+	arguments[0]:The new name for the caller
+	"""
+	def execute(self):
+		try:
+			if self.arguments[0]:
+				self.caller.socket.sendall("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
+				self.caller.name = self.arguments[0]
+			else:
+				self.caller.socket.sendall("No name specified =(\n")
+		except Exception, e:
+			self.server.clients.remove(self.caller)
+			self.caller.socket.close()
+
 
 class Broadcast(Command):
 	"""
 	Broadcast a message to all current connected socket of the server.
-	args[0]:The message to broadcast
+	arguments[0]:The message to broadcast
 	"""
 	def execute(self):
 		for client in self.server.clients:
 			if client.socket != self.caller.socket:
 				try:
-					client.socket.sendall(self.arguments[0])
+					client.socket.sendall(self.caller.format(self.arguments[0]))
 				except Exception, e:
-					socket.close()
-					self.server.socket_list.remove(client.socket)
 					self.server.clients.remove(client)
+					client.socket.close()

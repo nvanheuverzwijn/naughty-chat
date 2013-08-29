@@ -10,10 +10,10 @@ import string
 class Server(object):
 	"""The chat server. It relays communication between client."""
 
-	_port = 9999
-	_bind = "0.0.0.0"
+	_port = 0
+	_bind = ""
 	_server_socket = None
-	_buffer_size = 4096
+	_buffer_size = 0
 	_clients = []
 
 	@property
@@ -50,10 +50,11 @@ class Server(object):
 		self.bind = bind
 		self.buffer_size = buffer_size
 		if parser is not None:
-			klass = getattr(parsers, parser)
-			if klass is not None:
+			try:
+				klass = getattr(parsers, parser)
 				self.parser = klass()
-	
+			except AttributeError, e:
+				print "Could not instantiate '" + parser + "'. Are you sure it's declared properly in parsers.py?"
 	def listen(self):
 		self._server_socket = socket.socket(socket.AF_INET) 
 		self._server_socket.bind((self.bind, self.port))
@@ -67,13 +68,15 @@ class Server(object):
 				else:
 					self.__handle_request(sock)
 	def __handle_new_connection(self):
+		"""This is called whenever a new connection is initiated"""
 		socket, address = self.server_socket.accept()
-		client = clients.Client(ip=address, protocol="RAW", socket=socket)
+		client = clients.Client(ip=address[0], name=address[0], protocol="RAW", socket=socket)
 		self.clients.append(client)
-		cmd = commands.Broadcast(self, client, "[%s:%s] entered room\n" % address)
+		cmd = commands.Broadcast(self, client, "HERE COMES DADDY!\n".format(address[0]))
 		cmd.execute()
 	def __handle_request(self, caller):
-		data = caller.socket.recv(self.buffer_size)
+		"""This is called whenever data is received from one of the client."""
+		data = caller.socket.recv(self.buffer_size).strip("\n")
 		if data:
 			cmd = self.parser.parse(data)
 			if not isinstance(cmd, commands.Command):
@@ -81,7 +84,7 @@ class Server(object):
 			else:
 				cmd.server = self
 				cmd.caller = caller
-				cmd.arguments = string.split(data, " ")
+				cmd.arguments = data.split(' ')[1:]
 			cmd.execute()
 
 
@@ -89,10 +92,10 @@ class Server(object):
 if __name__ == "__main__":
 	import argparse
 	parser = argparse.ArgumentParser(description='kronos-chat server')
-	parser.add_argument("--port", metavar="PORT", type=int, help='the port to listen to')
-	parser.add_argument('--bind', metavar="IP", type=str, help='the ip to listen on')
+	parser.add_argument("--port", metavar="PORT", type=int, help="the port to listen to")
+	parser.add_argument("--bind", metavar="IP", type=str, help="the ip to listen on")
 
 	args = parser.parse_args()
 
-	s = Server(parser = "Standard")
+	s = Server(parser = "Parser")
 	s.listen()
