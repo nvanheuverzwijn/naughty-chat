@@ -51,15 +51,11 @@ class Rename(Command):
 	arguments[0]:The new name for the caller
 	"""
 	def execute(self):
-		try:
-			if self.arguments[0]:
-				self.caller.socket.sendall("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
-				self.caller.name = self.arguments[0]
-			else:
-				self.caller.socket.sendall("No name specified =(\n")
-		except Exception, e:
-			self.server.clients.remove(self.caller)
-			self.caller.socket.close()
+		if self.arguments[0]:
+			self.caller.send("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
+			self.caller.name = self.arguments[0]
+		else:
+			self.caller.socket.sendall("No name specified =(\n")
 
 
 class Broadcast(Command):
@@ -70,8 +66,4 @@ class Broadcast(Command):
 	def execute(self):
 		for client in self.server.clients:
 			if client.socket != self.caller.socket:
-				try:
-					client.socket.sendall(self.caller.format(self.arguments[0]))
-				except Exception, e:
-					self.server.clients.remove(client)
-					client.socket.close()
+				client.send(self.caller.format(self.arguments[0]))

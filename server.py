@@ -6,6 +6,7 @@ import commands
 import parsers
 import clients
 import string
+import protocols
 
 class Server(object):
 	"""The chat server. It relays communication between client."""
@@ -13,7 +14,6 @@ class Server(object):
 	_port = 0
 	_bind = ""
 	_server_socket = None
-	_buffer_size = 0
 	_clients = []
 
 	@property
@@ -33,22 +33,14 @@ class Server(object):
 	@property
 	def server_socket(self):
 		return self._server_socket
-
-	@property
-	def buffer_size(self):
-		return self._buffer_size
-	@buffer_size.setter
-	def buffer_size(self, value):
-		self._buffer_size = value
 	
 	@property
 	def clients(self):
 		return self._clients
 
-	def __init__(self, port=9999, bind="0.0.0.0", buffer_size=4096, parser=None):
+	def __init__(self, port=9999, bind="0.0.0.0", parser=None):
 		self.port = port
 		self.bind = bind
-		self.buffer_size = buffer_size
 		if parser is not None:
 			try:
 				klass = getattr(parsers, parser)
@@ -70,13 +62,13 @@ class Server(object):
 	def __handle_new_connection(self):
 		"""This is called whenever a new connection is initiated"""
 		socket, address = self.server_socket.accept()
-		client = clients.Client(ip=address[0], name=address[0], protocol="RAW", socket=socket)
+		client = clients.Client(ip=address[0], name=address[0], protocol=protocols.Raw(), socket=socket, server=self)
 		self.clients.append(client)
-		cmd = commands.Broadcast(self, client, "HERE COMES DADDY!\n".format(address[0]))
+		cmd = commands.Broadcast(self, client, "HERE COMES DADDY!")
 		cmd.execute()
 	def __handle_request(self, caller):
 		"""This is called whenever data is received from one of the client."""
-		data = caller.socket.recv(self.buffer_size).strip("\n")
+		data = caller.receive()
 		if data:
 			cmd = self.parser.parse(data)
 			if not isinstance(cmd, commands.Command):
@@ -86,6 +78,10 @@ class Server(object):
 				cmd.caller = caller
 				cmd.arguments = data.split(' ')[1:]
 			cmd.execute()
+		else:
+			print("dropping shit")
+			caller.socket.close()
+			self.clients.remove(caller)
 
 
 
