@@ -1,4 +1,4 @@
-kronos-chat
+naughty-chat
 ===========
 
 Simple chat in python
