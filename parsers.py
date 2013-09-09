@@ -27,15 +27,17 @@ class Parser(object):
 		self.trigger_parse_character = trigger_parse_character
 
 	def parse(self, message):
+		"""
+		Parse a message and return a tuple of the command that should be executed in the module commands and it's arguments.
+		message: the message to parse
+		returns: (string to pass to commands.getCommand; array of arguments)
+		"""
 		if message[0] != self.trigger_parse_character:
-			return None 
+			return ("Broadcast", [message])
+		else:
+			parts = message.split(' ')
+			return (parts[0][1:].title(), parts[1:])
 
-		parts = message.split(' ')
-		try:
-			# get the class from commands, titleize it (class becomes Class) and instantiate it
-			return getattr(commands, parts[0][1:].title())()  
-		except AttributeError, e:
-			return None
 
 
 #

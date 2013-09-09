@@ -1,3 +1,15 @@
+def getCommand(command_name, server=None, caller=None, arguments=[]):
+	"""
+	Try to instantiate a command from the command_name
+	command_name: The name of the command to instantiate.
+	throws: NameError, if the command is not found
+	returns: A Command object.
+	"""
+	try:
+		return globals()[command_name](server, caller, arguments)
+	except KeyError, e:
+		raise NameError("The command '"+command_name+"' was not found. Is it properly defined in commands.py? Is it correctly spelled?")
+
 class Command(object):
 	_server = None
 	_caller = None
@@ -27,10 +39,10 @@ class Command(object):
 	def arguments(self, value):
 		self._arguments = value
 
-	def __init__(self, server = None, caller = None, *args):
+	def __init__(self, server = None, caller = None, arguments=[]):
 		self.server = server
 		self.caller = caller
-		self.arguments = args
+		self.arguments = arguments
 
 	def execute(self):
 		"""Overide this method"""

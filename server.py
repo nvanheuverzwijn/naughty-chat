@@ -74,13 +74,8 @@ class Server(object):
 		"""This is called whenever data is received from one of the client."""
 		try:
 			data = caller.receive()
-			cmd = self.parser.parse(data)
-			if not isinstance(cmd, commands.Command):
-				cmd = commands.Broadcast(self, caller, data)
-			else:
-				cmd.server = self
-				cmd.caller = caller
-				cmd.arguments = data.split(' ')[1:]
+			result = self.parser.parse(data)
+			cmd = commands.getCommand(result[0], self, caller, result[1])
 			try:
 				cmd.execute()
 			except clients.CouldNotSendRequestError, e:
