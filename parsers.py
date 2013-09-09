@@ -1,5 +1,17 @@
 import commands
 
+def getParser(parser_name):
+	"""
+	Try to instantiate the a parser from the parser_name
+	parser_name: The name of the parser to instantiate.
+	throws: NameError, if the parser is not found
+	returns: A Parser object.
+	"""
+	try:
+		return globals()[parser_name]()
+	except KeyError, e:
+		raise NameError("The parser '"+parser_name+"' was not found. Is it properly defined in parsers.py? Is it correctly spelled?")
+
 class Parser(object):
 
 	_trigger_parse_character = '/'
@@ -25,6 +37,10 @@ class Parser(object):
 		except AttributeError, e:
 			return None
 
+
+#
+# Example of parser.
+#
 class Standard(Parser):
 
 	def parse(self, message):

@@ -41,12 +41,12 @@ class Server(object):
 	def __init__(self, port=9998, bind="0.0.0.0", parser=None):
 		self.port = port
 		self.bind = bind
-		if parser is not None:
-			try:
-				klass = getattr(parsers, parser)
-				self.parser = klass()
-			except AttributeError, e:
-				print "Could not instantiate '" + parser + "'. Are you sure it's declared properly in parsers.py?"
+		try:
+			self.parser = parsers.getParser(parser)
+		except NameError, e:
+			print e.message 
+			print "Now using default parser"
+			self.parser = parsers.getParser("Parser")
 	def disconnect_client(self, client):
 		self.clients.remove(client)
 		client.socket.close()
