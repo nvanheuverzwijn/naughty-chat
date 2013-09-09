@@ -42,8 +42,7 @@ class Exit(Command):
 	arguments:Takes no args
 	"""
 	def execute(self):
-		self.server.clients.remove(self.caller)
-		self.caller.socket.close()
+		self.server.disconnect_client(self.caller)
 
 class Rename(Command):
 	"""

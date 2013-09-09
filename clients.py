@@ -57,10 +57,6 @@ class Client(object):
 		self.socket = socket
 		self.server = server
 
-	def disconnect(self):
-		self.server.clients.remove(self)
-		self.socket.close()
-		
 	def format(self, message):
 		"""
 		Here, we apply color, formatting, etc.

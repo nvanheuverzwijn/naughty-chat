@@ -47,6 +47,10 @@ class Server(object):
 				self.parser = klass()
 			except AttributeError, e:
 				print "Could not instantiate '" + parser + "'. Are you sure it's declared properly in parsers.py?"
+	def disconnect_client(self, client):
+		self.clients.remove(client)
+		client.socket.close()
+
 	def listen(self):
 		self._server_socket = socket.socket(socket.AF_INET) 
 		self._server_socket.bind((self.bind, self.port))
@@ -83,7 +87,7 @@ class Server(object):
 				#Tell the client that the command could not be executed properly.
 				pass
 		except clients.SocketError, e:
-			caller.disconnect()
+			self.disconnect_client(caller)
 		except clients.ClientIsNotFinishedSendingError, e:
 			pass
 
