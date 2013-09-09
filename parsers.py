@@ -2,7 +2,7 @@ import commands
 
 def getParser(parser_name):
 	"""
-	Try to instantiate the a parser from the parser_name
+	Try to instantiate a parser from the parser_name
 	parser_name: The name of the parser to instantiate.
 	throws: NameError, if the parser is not found
 	returns: A Parser object.
