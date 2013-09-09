@@ -16,11 +16,12 @@ class Parser(object):
 
 	def parse(self, message):
 		if message[0] != self.trigger_parse_character:
-			return None
+			return None 
 
 		parts = message.split(' ')
 		try:
-			return getattr(commands, parts[0][1:].title())() #Get the class from commands and instantiate it 
+			# get the class from commands, titleize it (class becomes Class) and instantiate it
+			return getattr(commands, parts[0][1:].title())()  
 		except AttributeError, e:
 			return None
 
