@@ -38,7 +38,7 @@ class Server(object):
 	def clients(self):
 		return self._clients
 
-	def __init__(self, port=9998, bind="0.0.0.0", parser=None):
+	def __init__(self, port=9999, bind="0.0.0.0", parser=None):
 		self.port = port
 		self.bind = bind
 		try:
