@@ -38,7 +38,7 @@ class Server(object):
 	def clients(self):
 		return self._clients
 
-	def __init__(self, port=9999, bind="0.0.0.0", parser=None):
+	def __init__(self, port=9998, bind="0.0.0.0", parser=None):
 		self.port = port
 		self.bind = bind
 		if parser is not None:
@@ -68,8 +68,8 @@ class Server(object):
 		cmd.execute()
 	def __handle_request(self, caller):
 		"""This is called whenever data is received from one of the client."""
-		data = caller.receive()
-		if data:
+		try:
+			data = caller.receive()
 			cmd = self.parser.parse(data)
 			if not isinstance(cmd, commands.Command):
 				cmd = commands.Broadcast(self, caller, data)
@@ -77,11 +77,15 @@ class Server(object):
 				cmd.server = self
 				cmd.caller = caller
 				cmd.arguments = data.split(' ')[1:]
-			cmd.execute()
-		else:
-			print("dropping shit")
-			caller.socket.close()
-			self.clients.remove(caller)
+			try:
+				cmd.execute()
+			except clients.CouldNotSendRequestError, e:
+				#Tell the client that the command could not be executed properly.
+				pass
+		except clients.SocketError, e:
+			caller.disconnect()
+		except clients.ClientIsNotFinishedSendingError, e:
+			pass
 
 
 

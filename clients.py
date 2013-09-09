@@ -1,9 +1,17 @@
 import socket
+import protocols
+
+class SocketError(Exception):
+	pass
+class ClientIsNotFinishedSendingError(Exception):
+	pass
+class CouldNotSendRequestError(Exception):
+	pass
 
 class Client(object):
 	_ip = ""
 	_name = ""
-	_protocol = ""
+	_protocol = None
 	_socket = None
 	_server = None
 
@@ -42,14 +50,14 @@ class Client(object):
 	def server(self, value):
 		self._server = value
 	
-	def __init__(self, ip="", name="", protocol="", socket=None, server=None):
+	def __init__(self, ip="", name="", protocol=None, socket=None, server=None):
 		self.ip = ip
 		self.name = name
 		self.protocol = protocol
 		self.socket = socket
 		self.server = server
 
-	def _disconnect(self):
+	def disconnect(self):
 		self.server.clients.remove(self)
 		self.socket.close()
 		
@@ -66,22 +74,22 @@ class Client(object):
 		Receive the client data.
 		"""
 		try:
-			return self.protocol.decode(self.protocol.readTcpSocket(self.socket))
-		except Exception, e:
-			print e.message
-			self._disconnect()
+			return self.protocol.readTcpSocket(self.socket)
+		except protocols.ProtocolIsNotRespectedError, e:
+			raise ClientIsNotFinishedSendingError("The client is not finished sending it's message.", e)
+		except protocols.DataCouldNotBeReadError, e:
+			raise SocketError("Client socket died", e)
 			
-
 	def send(self,data):
 		"""
 		Send data to this client
 		"""
 		try:
-			self.protocol.sendTcpSocket(self.protocol.encode(data), self.socket)
+			self.protocol.sendTcpSocket(data, self.socket)
+		except protocols.ProtocolIsNotRespectedError, e:
+			raise CouldNotSendRequestError("", e)
 		except Exception, e:
-			print e.message
-			self._disconnect()
-
+			raise SocketError("Client socket died", e)
 
 	def fileno(self):
 		"""The socket descriptor integer"""
