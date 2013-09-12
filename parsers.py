@@ -1,6 +1,6 @@
 import commands
 
-def getParser(parser_name):
+def get_parser(parser_name):
 	"""
 	Try to instantiate a parser from the parser_name
 	parser_name: The name of the parser to instantiate.
@@ -30,7 +30,7 @@ class Parser(object):
 		"""
 		Parse a message and return a tuple of the command that should be executed in the module commands and it's arguments.
 		message: the message to parse
-		returns: (string to pass to commands.getCommand; array of arguments)
+		returns: (string to pass to commands.get_command; array of arguments)
 		"""
 		if message[0] != self.trigger_parse_character:
 			return ("Broadcast", [message])

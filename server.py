@@ -42,11 +42,11 @@ class Server(object):
 		self.port = port
 		self.bind = bind
 		try:
-			self.parser = parsers.getParser(parser)
+			self.parser = parsers.get_parser(parser)
 		except NameError, e:
 			print e.message 
 			print "Now using default parser"
-			self.parser = parsers.getParser("Parser")
+			self.parser = parsers.get_parser("Parser")
 	def disconnect_client(self, client):
 		self.clients.remove(client)
 		client.socket.close()
@@ -75,7 +75,7 @@ class Server(object):
 		try:
 			data = caller.receive()
 			result = self.parser.parse(data)
-			cmd = commands.getCommand(result[0], self, caller, result[1])
+			cmd = commands.get_command(result[0], self, caller, result[1])
 			try:
 				cmd.execute()
 			except clients.CouldNotSendRequestError, e:

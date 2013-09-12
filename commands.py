@@ -1,4 +1,4 @@
-def getCommand(command_name, server=None, caller=None, arguments=[]):
+def get_command(command_name, server=None, caller=None, arguments=[]):
 	"""
 	Try to instantiate a command from the command_name
 	command_name: The name of the command to instantiate.
