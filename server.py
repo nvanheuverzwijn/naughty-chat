@@ -68,7 +68,7 @@ class Server(object):
 		socket, address = self.server_socket.accept()
 		client = clients.Client(ip=address[0], name=address[0], protocol=protocols.Raw(), socket=socket, server=self)
 		self.clients.append(client)
-		cmd = commands.Broadcast(self, client, "HERE COMES DADDY!")
+		cmd = commands.Broadcast(self, client, ["HERE COMES DADDY!"])
 		cmd.execute()
 	def __handle_request(self, caller):
 		"""This is called whenever data is received from one of the client."""
