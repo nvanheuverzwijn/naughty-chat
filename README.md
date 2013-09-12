@@ -1,7 +1,12 @@
 naughty-chat
-===========
+============
 
-Simple chat in python
+Simple chat in python.
+
+Why?
+====
+
+Because I want to learn python.
 
 Usage
 =====
@@ -16,9 +21,9 @@ Any data that is sent from the client is passed through the protocol, which retu
 That string is then crunched by the parser that returns metadata about what command should be executed. 
 These metadata are then converted by the server into and executable command.
 
-A little graphice:
+The workflow is as follow:
 
-`client>==>(encoded-message)>==>server>==>protocol>==>decoded-message>==>parser>==>command-metadata>==>server-executing-command`
+`client` sends `(encoded-message)` to `server` sends `(encoded-message)` to `protocol` sends `(decoded-message)` to `parser` sends `(metadata)` to `server` instantiate and execute `command`
 
 Protocols
 =========
