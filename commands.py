@@ -48,6 +48,16 @@ class Command(object):
 		"""Overide this method"""
 		raise NotImplementedError()
 
+class Help(Command):
+	def execute(self):
+		import inspect
+		import sys
+		classes = inspect.getmembers(sys.modules[__name__], inspect.isclass) 
+		self.caller.send("Available commands are:")		
+		for class_info in classes:
+			if issubclass(class_info[1], Command) and class_info[0] != "Command":
+				self.caller.send("/"+class_info[0].lower())		
+
 class Exit(Command):
 	"""
 	Remove the caller from the server socket list and close it's connection.
