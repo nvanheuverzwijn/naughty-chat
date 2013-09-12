@@ -85,7 +85,7 @@ class Broadcast(Command):
 	arguments[0]:The message to broadcast
 	"""
 	def execute(self):
-		if len(self.arguments) == 1):
+		if len(self.arguments) == 1:
 			for client in self.server.clients:
 				if client.socket != self.caller.socket:
 					client.send(self.caller.format(self.arguments[0]))
