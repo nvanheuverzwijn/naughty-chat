@@ -75,7 +75,7 @@ class Server(object):
 		try:
 			data = caller.receive()
 			result = self.parser.parse(data)
-			cmd = commands.get_command(result[0], self, caller, result[1])
+			cmd = commands.get_command(result.command_name, self, caller, result.command_arguments)
 			try:
 				cmd.execute()
 			except clients.CouldNotSendRequestError, e:

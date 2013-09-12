@@ -1,5 +1,3 @@
-import commands
-
 def get_parser(parser_name):
 	"""
 	Try to instantiate a parser from the parser_name
@@ -12,6 +10,31 @@ def get_parser(parser_name):
 	except KeyError, e:
 		raise NameError("The parser '"+parser_name+"' was not found. Is it properly defined in parsers.py? Is it correctly spelled?")
 
+class Result(object):
+	"""
+	This object is the result of a parse operation
+	"""
+	_command_name = ""
+	_command_arguments = []
+
+	@property
+	def command_name(self):
+		return self._command_name
+	@command_name.setter
+	def command_name(self, value):
+		self._command_name = value
+
+	@property
+	def command_arguments(self):
+		return self._command_arguments
+	@command_arguments.setter
+	def command_arguments(self, value):
+		self._command_arguments = value
+
+	def __init__(self, command_name="", command_arguments=[]):
+		self.command_name = command_name
+		self.command_arguments = command_arguments
+	
 class Parser(object):
 
 	_trigger_parse_character = '/'
@@ -33,10 +56,10 @@ class Parser(object):
 		returns: (string to pass to commands.get_command; array of arguments)
 		"""
 		if message[0] != self.trigger_parse_character:
-			return ("Broadcast", [message])
+			return Result("Broadcast", [message])
 		else:
 			parts = message.split(' ')
-			return (parts[0][1:].title(), parts[1:])
+			return Result(parts[0][1:].title(), parts[1:])
 
 
 
@@ -47,15 +70,16 @@ class Standard(Parser):
 
 	def parse(self, message):
 		if cmd == "leave":
-			return commands.Exit()
-		return None
+			return Result("Exit")
+		return Result("Broadcast", message)
 
 class Kronos(Parser):
 
 	def parse(self, message):
 		parts = message.split(' ')
-		if parts[0] == "exit":
-			return commands.Exit()
-		if parts[0] == "rename":
-			return commands.Rename()
-		return None
+		if len(parts) != 0:
+			if parts[0] == "exit":
+				return Result("Exit")
+			if parts[0] == "rename" and len(parts) >= 2:
+				return Result("Rename", [parts[1]])
+		return Result("Broadcast", message)
