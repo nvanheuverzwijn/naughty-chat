@@ -72,7 +72,7 @@ class Rename(Command):
 	arguments[0]:The new name for the caller
 	"""
 	def execute(self):
-		if self.arguments[0]:
+		if len(self.arguments) == 1:
 			self.caller.send("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
 			self.caller.name = self.arguments[0]
 		else:
