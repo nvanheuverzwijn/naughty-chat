@@ -55,7 +55,7 @@ class Parser(object):
 		message: the message to parse
 		returns: (string to pass to commands.get_command; array of arguments)
 		"""
-		if message[0] != self.trigger_parse_character:
+		if len(message) == 0 or message[0] != self.trigger_parse_character:
 			return Result("Broadcast", [message])
 		else:
 			parts = message.split(' ')
