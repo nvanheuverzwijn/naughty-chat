@@ -76,7 +76,7 @@ class Rename(Command):
 			self.caller.send("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
 			self.caller.name = self.arguments[0]
 		else:
-			self.caller.socket.sendall("No name specified =(\n")
+			self.caller.send("No name specified =(")
 
 
 class Broadcast(Command):
@@ -85,6 +85,8 @@ class Broadcast(Command):
 	arguments[0]:The message to broadcast
 	"""
 	def execute(self):
-		for client in self.server.clients:
-			if client.socket != self.caller.socket:
-				client.send(self.caller.format(self.arguments[0]))
+		if len(self.arguments) == 1):
+			for client in self.server.clients:
+				if client.socket != self.caller.socket:
+					client.send(self.caller.format(self.arguments[0]))
+
