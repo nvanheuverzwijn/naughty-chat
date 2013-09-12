@@ -85,6 +85,9 @@ class Server(object):
 			self.disconnect_client(caller)
 		except clients.ClientIsNotFinishedSendingError, e:
 			pass
+		except NameError, e:
+			# The command is not recognized.
+			pass
 
 
 
