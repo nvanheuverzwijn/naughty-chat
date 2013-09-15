@@ -10,6 +10,12 @@ def get_command(command_name, server=None, caller=None, arguments=[]):
 	except KeyError, e:
 		raise NameError("The command '"+command_name+"' was not found. Is it properly defined in commands.py? Is it correctly spelled?")
 
+class ExecutionFailedError(Exception):
+	"""
+	Happens whenever a command raises an unhandled exception.
+	"""
+	pass
+
 class Command(object):
 	_server = None
 	_caller = None
@@ -46,10 +52,17 @@ class Command(object):
 
 	def execute(self):
 		"""Overide this method"""
+		try:
+			self._execute()
+		except Exception, e:
+			raise ExecutionFailedError("Execution failed", e)
+
+	def _execute(self):
+		"""Overide this method"""
 		raise NotImplementedError()
 
 class Help(Command):
-	def execute(self):
+	def _execute(self):
 		import inspect
 		import sys
 		classes = inspect.getmembers(sys.modules[__name__], inspect.isclass) 
@@ -63,7 +76,7 @@ class Exit(Command):
 	Remove the caller from the server socket list and close it's connection.
 	arguments:Takes no args
 	"""
-	def execute(self):
+	def _execute(self):
 		self.server.disconnect_client(self.caller)
 
 class Rename(Command):
@@ -71,7 +84,7 @@ class Rename(Command):
 	Set the name of the caller to the specified argument.
 	arguments[0]:The new name for the caller
 	"""
-	def execute(self):
+	def _execute(self):
 		if len(self.arguments) == 1:
 			self.caller.send("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
 			self.caller.name = self.arguments[0]
@@ -84,7 +97,7 @@ class Broadcast(Command):
 	Broadcast a message to all current connected socket of the server.
 	arguments[0]:The message to broadcast
 	"""
-	def execute(self):
+	def _execute(self):
 		if len(self.arguments) == 1:
 			for client in self.server.clients:
 				if client.socket != self.caller.socket:

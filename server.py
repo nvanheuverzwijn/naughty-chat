@@ -76,11 +76,10 @@ class Server(object):
 			data = caller.receive()
 			result = self.parser.parse(data)
 			cmd = commands.get_command(result.command_name, self, caller, result.command_arguments)
-			try:
-				cmd.execute()
-			except clients.CouldNotSendRequestError, e:
-				#Tell the client that the command could not be executed properly.
-				pass
+			cmd.execute()
+		except commands.ExecutionFailedError, e:
+			#Tell the client that the command could not be executed properly.
+			pass
 		except clients.SocketError, e:
 			self.disconnect_client(caller)
 		except clients.ClientIsNotFinishedSendingError, e:
