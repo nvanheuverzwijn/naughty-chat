@@ -13,7 +13,7 @@ class Server(object):
 
 	_port = 0
 	_bind = ""
-	_server_socket = None
+	_server_client = None
 	_clients = []
 
 	@property
@@ -31,8 +31,11 @@ class Server(object):
 		self._bind = value
 	
 	@property
-	def server_socket(self):
-		return self._server_socket
+	def server_client(self):
+		return self._server_client
+	@server_client.setter
+	def server_client(self, value):
+		self._server_client = value
 	
 	@property
 	def clients(self):
@@ -52,23 +55,23 @@ class Server(object):
 		client.socket.close()
 
 	def listen(self):
-		self._server_socket = socket.socket(socket.AF_INET) 
-		self._server_socket.bind((self.bind, self.port))
-		self._server_socket.listen(10)
+		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=protocols.Raw(), socket=socket.socket(socket.AF_INET), server=self) 
+		self.server_client.socket.bind((self.bind, self.port))
+		self.server_client.socket.listen(10)
 
 		while True:
-			inputready, outputready, exceptready = select.select(self.clients + [self.server_socket],[],[])
+			inputready, outputready, exceptready = select.select(self.clients + [self.server_client],[],[])
 			for sock in inputready:
-				if sock == self.server_socket:
+				if sock == self.server_client:
 					self.__handle_new_connection()
 				else:
 					self.__handle_request(sock)
 	def __handle_new_connection(self):
 		"""This is called whenever a new connection is initiated"""
-		socket, address = self.server_socket.accept()
+		socket, address = self.server_client.socket.accept()
 		client = clients.Client(ip=address[0], name=address[0], protocol=protocols.Raw(), socket=socket, server=self)
 		self.clients.append(client)
-		cmd = commands.Broadcast(self, client, ["HERE COMES DADDY!"])
+		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(address[0])])
 		cmd.execute()
 	def __handle_request(self, caller):
 		"""This is called whenever data is received from one of the client."""
