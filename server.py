@@ -51,6 +51,9 @@ class Server(object):
 			print "Now using default parser"
 			self.parser = parsers.get_parser("Parser")
 	def disconnect_client(self, client):
+		"""
+		Disconnect a client and announce it to the world.
+		"""
 		self.clients.remove(client)
 		client.socket.close()
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has left the chat!".format(client.name), [client.name]])
@@ -88,7 +91,7 @@ class Server(object):
 			cmd.execute()
 		except commands.ExecutionFailedError, e:
 			#Tell the client that the command could not be executed properly.
-			cmd = commands.Whisper(self, self.server_client, [caller.name, e.message])
+			cmd = commands.Whisper(self, self.server_client, [caller.name, "Command execution failed"])
 			cmd.execute()
 		except clients.SocketError, e:
 			#Client probably just disconnected.
