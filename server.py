@@ -61,17 +61,17 @@ class Server(object):
 
 		while True:
 			inputready, outputready, exceptready = select.select(self.clients + [self.server_client],[],[])
-			for sock in inputready:
-				if sock == self.server_client:
+			for client in inputready:
+				if client == self.server_client:
 					self.__handle_new_connection()
 				else:
-					self.__handle_request(sock)
+					self.__handle_request(client)
 	def __handle_new_connection(self):
 		"""This is called whenever a new connection is initiated"""
 		socket, address = self.server_client.socket.accept()
 		client = clients.Client(ip=address[0], name=address[0], protocol=protocols.Raw(), socket=socket, server=self)
 		self.clients.append(client)
-		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(address[0])])
+		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(client.ip), [client.name]])
 		cmd.execute()
 	def __handle_request(self, caller):
 		"""This is called whenever data is received from one of the client."""
@@ -80,16 +80,24 @@ class Server(object):
 			result = self.parser.parse(data)
 			cmd = commands.get_command(result.command_name, self, caller, result.command_arguments)
 			cmd.execute()
+		except commands.ArgumentsValidationError, e:
+			#Command arguments did not validate.
+			cmd = commands.Whisper(self, self.server_client, [caller.name, e.message])
+			cmd.execute()
 		except commands.ExecutionFailedError, e:
 			#Tell the client that the command could not be executed properly.
-			pass
+			cmd = commands.Whisper(self, self.server_client, [caller.name, e.message])
+			cmd.execute()
 		except clients.SocketError, e:
+			#Client probably just disconnected.
 			self.disconnect_client(caller)
 		except clients.ClientIsNotFinishedSendingError, e:
+			#Client has not finished sending it's data.  
 			pass
 		except NameError, e:
 			# The command is not recognized.
-			pass
+			cmd = commands.Whisper(self, self.server_client, [caller.name, "Unrecognized command"])
+			cmd.execute()
 
 
 

@@ -15,6 +15,11 @@ class ExecutionFailedError(Exception):
 	Happens whenever a command raises an unhandled exception.
 	"""
 	pass
+class ArgumentsValidationError(Exception):
+	"""
+	Happens whenever arguments passed to the command are wrong.
+	"""
+	pass
 
 class Command(object):
 	_server = None
@@ -52,6 +57,7 @@ class Command(object):
 
 	def execute(self):
 		"""Overide this method"""
+		self._validate()
 		try:
 			self._execute()
 		except Exception, e:
@@ -60,8 +66,14 @@ class Command(object):
 	def _execute(self):
 		"""Overide this method"""
 		raise NotImplementedError()
+	def _validate(self):
+		"""Here, you get a chance to validate arguments"""
+		pass
 
 class Help(Command):
+	"""
+	Provides the list of executable command.
+	"""
 	def _execute(self):
 		import inspect
 		import sys
@@ -84,22 +96,44 @@ class Rename(Command):
 	Set the name of the caller to the specified argument.
 	arguments[0]:The new name for the caller
 	"""
+	def _validate(self):
+		if len(self.arguments) != 1:
+			raise ArgumentsValidationError("The new name needs to be passed as the first argument.")
 	def _execute(self):
-		if len(self.arguments) == 1:
-			self.caller.send("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
-			self.caller.name = self.arguments[0]
-		else:
-			self.caller.send("No name specified =(")
+		self.caller.send("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
+		self.caller.name = self.arguments[0]
 
 
 class Broadcast(Command):
 	"""
 	Broadcast a message to all current connected socket of the server.
 	arguments[0]:The message to broadcast
+	arguments[1]:An array of client name to not broadcast to.
 	"""
+	def _validate(self):
+		if len(self.arguments) == 0 or len(self.arguments) >=3:
+			raise ArgumentsValidationError("Wrong number of arguments. Only one or two arguments expected. First is the message to broadcast, the second is a list of client name to ignore.")
+
 	def _execute(self):
 		if len(self.arguments) == 1:
-			for client in self.server.clients:
-				if client.socket != self.caller.socket:
-					client.send(self.caller.format(self.arguments[0]))
+			self.arguments.append([])
+		for client in self.server.clients:
+			print client.name
+			print self.arguments
+			if client.socket != self.caller.socket and client.name not in self.arguments[1]:
+				print client.name
+				client.send(self.caller.format(self.arguments[0]))
 
+class Whisper(Command):
+	"""
+	Whisp to a client.
+	arguments[0]:Name of the client
+	arguments[1]:Message to send.
+	"""
+	def _validate(self):
+		if len(self.arguments) != 2:
+			raise ArgumentsValidationError("First argument must be the name of a client, second must be the message.")
+	def _execute(self):
+		for client in self.server.clients:
+			if client.name == self.arguments[0]:
+				client.send(self.caller.format(self.arguments[1]))

@@ -59,9 +59,23 @@ class Parser(object):
 			return Result("Broadcast", [message])
 		else:
 			parts = message.split(' ')
+			for i, part in enumerate(parts[:]):
+				if(self._is_part_array(part)):
+					parts[i] = part.split(",")
+
 			return Result(parts[0][1:].title(), parts[1:])
-
-
+	def _is_part_array(self, part):
+		"""
+		Determine if part is should be treated as an array or not.
+		An array have the form of "first,second,last"
+		"""
+		if len(part) == 0 or part[0] == "," or part[-1] == "," or "," not in part:
+			return False
+		
+		for i in range(1, len(part)-1):
+			if part[i] == "," and (part[i-1] == ' ' or part[i+1] == ' '):
+				return False
+		return True
 
 #
 # Example of parser.
