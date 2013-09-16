@@ -53,6 +53,8 @@ class Server(object):
 	def disconnect_client(self, client):
 		self.clients.remove(client)
 		client.socket.close()
+		cmd = commands.Broadcast(self, self.server_client, ["{0} has left the chat!".format(client.name), [client.name]])
+		cmd.execute()
 
 	def listen(self):
 		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=protocols.Raw(), socket=socket.socket(socket.AF_INET), server=self) 
@@ -71,7 +73,7 @@ class Server(object):
 		socket, address = self.server_client.socket.accept()
 		client = clients.Client(ip=address[0], name=address[0], protocol=protocols.Raw(), socket=socket, server=self)
 		self.clients.append(client)
-		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(client.ip), [client.name]])
+		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(client.name), [client.name]])
 		cmd.execute()
 	def __handle_request(self, caller):
 		"""This is called whenever data is received from one of the client."""
