@@ -99,8 +99,15 @@ class Rename(Command):
 	def _validate(self):
 		if len(self.arguments) != 1:
 			raise ArgumentsValidationError("The new name needs to be passed as the first argument.")
+		elif len(self.arguments[0]) == 0:
+			raise ArgumentsValidationError("The first argument cannot be empty")
+		else:
+			for client in self.server.clients:
+				if self.arguments[0] == client.name and client != self.caller:
+					raise ArgumentsValidationError("The name '{0}' is already used.".format(self.arguments[0]))
+
 	def _execute(self):
-		self.caller.send("Changing your name from '{0}' to '{1}'\n".format(self.caller.name, self.arguments[0]))
+		self.server.whisp_client("Changing your name from '{0}' to '{1}'".format(self.caller.name, self.arguments[0]), self.caller)
 		self.caller.name = self.arguments[0]
 
 
@@ -118,10 +125,7 @@ class Broadcast(Command):
 		if len(self.arguments) == 1:
 			self.arguments.append([])
 		for client in self.server.clients:
-			print client.name
-			print self.arguments
 			if client.socket != self.caller.socket and client.name not in self.arguments[1]:
-				print client.name
 				client.send(self.caller.format(self.arguments[0]))
 
 class Whisper(Command):

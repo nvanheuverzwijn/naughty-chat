@@ -50,6 +50,9 @@ class Server(object):
 			print e.message 
 			print "Now using default parser"
 			self.parser = parsers.get_parser("Parser")
+	def whisp_client(self, message, client):
+		cmd = commands.Whisper(self, self.server_client, [client.name, message])
+		cmd.execute()
 	def disconnect_client(self, client):
 		"""
 		Disconnect a client and announce it to the world.
