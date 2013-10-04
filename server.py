@@ -71,6 +71,7 @@ class Server(object):
 
 	def listen(self):
 		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=protocols.Raw(), socket=socket.socket(socket.AF_INET), server=self) 
+		self.server_client.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.server_client.socket.bind((self.bind, self.port))
 		self.server_client.socket.listen(10)
 
