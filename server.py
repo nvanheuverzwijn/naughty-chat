@@ -57,7 +57,7 @@ class Server(object):
 		"""
 		Disconnect a client and announce it to the world.
 		"""
-		elf.clients.remove(client)
+		self.clients.remove(client)
 		client.socket.close()
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has left the chat!".format(client.name), [client.name]])
 		cmd.execute()
