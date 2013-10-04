@@ -57,10 +57,17 @@ class Server(object):
 		"""
 		Disconnect a client and announce it to the world.
 		"""
-		self.clients.remove(client)
+		elf.clients.remove(client)
 		client.socket.close()
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has left the chat!".format(client.name), [client.name]])
 		cmd.execute()
+
+	def stop(self):
+		cmd = commands.Broadcast(self, self.server_client, ["I AM GOING DOWN."])
+		cmd.execute()
+		for client in self.clients:
+			self.disconnect_client(client)
+		self.server_client.socket.close()
 
 	def listen(self):
 		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=protocols.Raw(), socket=socket.socket(socket.AF_INET), server=self) 
@@ -118,4 +125,8 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	s = Server(parser = "Parser")
-	s.listen()
+	try:
+		s.listen()
+	except KeyboardInterrupt, e:
+		print e.message
+		s.stop()
