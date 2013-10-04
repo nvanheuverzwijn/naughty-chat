@@ -61,7 +61,7 @@ class Client(object):
 		"""
 		Here, we apply color, formatting, etc.
 		"""
-		if type(self.protocol).__name__ == "Raw":
+		if type(self.protocol[0]).__name__ == "Raw":
 			return self.name + ":" + message
 		return message
 
@@ -70,7 +70,12 @@ class Client(object):
 		Receive the client data.
 		"""
 		try:
-			return self.protocol.readTcpSocket(self.socket)
+			data = self.protocol[0].readTcpSocket(self.socket)
+			if len(self.protocol) > 1:
+				for protocol in self.protocol[1:]:
+					data = protocol.decode(data)
+			
+			return data
 		except protocols.ProtocolIsNotRespectedError, e:
 			raise ClientIsNotFinishedSendingError("The client is not finished sending it's message.", e)
 		except protocols.DataCouldNotBeReadError, e:
@@ -81,7 +86,10 @@ class Client(object):
 		Send data to this client
 		"""
 		try:
-			self.protocol.sendTcpSocket(data, self.socket)
+			if len(self.protocol) > 1:
+				for protocol in reversed(self.protocol[1:]):
+					data = protocol.encode(data)
+			self.protocol[0].sendTcpSocket(data, self.socket)
 		except protocols.ProtocolIsNotRespectedError, e:
 			raise CouldNotSendRequestError("", e)
 		except Exception, e:
