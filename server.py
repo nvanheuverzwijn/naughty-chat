@@ -127,6 +127,7 @@ if __name__ == "__main__":
 	s = Server(parser = "Parser")
 	try:
 		s.listen()
-	except KeyboardInterrupt, e:
-		print e.message
+	except (KeyboardInterrupt, Exception) as e:
+		print e
+	finally:
 		s.stop()
