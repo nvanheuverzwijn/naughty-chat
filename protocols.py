@@ -1,3 +1,5 @@
+import base64
+
 class DataCouldNotBeReadError(Exception):
 	"""
 	This is raised whenever the socket returned an empty string.
@@ -82,3 +84,16 @@ class Raw(Protocol):
 		if data[-1:] != "\n":
 			raise ProtocolIsNotRespectedError("The data receive did not end with a line feed.") 
 		return data.strip("\n")
+class BaseSixtyFour(Protocol):
+
+	def encode(self, data):
+		try:
+			return base64.b64encode(data)
+		except Exception, e:
+			raise ProtocolIsNotRespectedError("Could not encode the data received to base64 using `base64` module.", e)
+	def decode(self, data):
+		try:
+			return base64.b64decode(data)
+		except TypeError, e:
+			raise ProtocolIsNotRespectedError("Could not decode the data received using `base64` module.", e)
+
