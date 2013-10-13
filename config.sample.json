@@ -1,7 +1,6 @@
 {
-	"bind_ip":"www.xxx.yyy.zzz",
-	"configuration_file":"FILEPATH",
-	"encoders":["List", "Of", "Encoder"],
+	"bind":"127.0.0.1",
+	"encoders":["Raw", "BaseSixtyFour"],
 	"parser":"Parser",
 	"port":"9999"
 }
