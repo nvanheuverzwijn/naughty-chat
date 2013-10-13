@@ -53,6 +53,7 @@ class Server(object):
 	def whisp_client(self, message, client):
 		cmd = commands.Whisper(self, self.server_client, [client.name, message])
 		cmd.execute()
+
 	def disconnect_client(self, client):
 		"""
 		Disconnect a client and announce it to the world.
@@ -85,7 +86,7 @@ class Server(object):
 	def __handle_new_connection(self):
 		"""This is called whenever a new connection is initiated"""
 		socket, address = self.server_client.socket.accept()
-		client = clients.Client(ip=address[0], name=address[0], protocol=[protocols.Raw(), protocols.BaseSixtyFour()], socket=socket, server=self)
+		client = clients.Client(ip=address[0], name=address[0], protocol=[protocols.Raw()], socket=socket, server=self)
 		self.clients.append(client)
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(client.name), [client.name]])
 		cmd.execute()
@@ -114,21 +115,3 @@ class Server(object):
 			# The command is not recognized.
 			cmd = commands.Whisper(self, self.server_client, [caller.name, "Unrecognized command"])
 			cmd.execute()
-
-
-
-if __name__ == "__main__":
-	import argparse
-	parser = argparse.ArgumentParser(description='kronos-chat server')
-	parser.add_argument("--port", metavar="PORT", type=int, help="the port to listen to")
-	parser.add_argument("--bind", metavar="IP", type=str, help="the ip to listen on")
-
-	args = parser.parse_args()
-
-	s = Server(parser = "Parser")
-	try:
-		s.listen()
-	except (KeyboardInterrupt, Exception) as e:
-		print e
-	finally:
-		s.stop()
