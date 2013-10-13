@@ -96,7 +96,7 @@ class Server(object):
 		self.server_client.socket.close()
 
 	def listen(self):
-		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=[protocols.Raw()], socket=socket.socket(socket.AF_INET), server=self) 
+		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=self.encoders, socket=socket.socket(socket.AF_INET), server=self) 
 		self.server_client.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.server_client.socket.bind((self.bind, self.port))
 		self.server_client.socket.listen(10)
@@ -111,7 +111,7 @@ class Server(object):
 	def __handle_new_connection(self):
 		"""This is called whenever a new connection is initiated"""
 		socket, address = self.server_client.socket.accept()
-		client = clients.Client(ip=address[0], name=address[0], protocol=[protocols.Raw()], socket=socket, server=self)
+		client = clients.Client(ip=address[0], name=address[0], protocol=self.encoders, socket=socket, server=self)
 		self.clients.append(client)
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(client.name), [client.name]])
 		cmd.execute()
