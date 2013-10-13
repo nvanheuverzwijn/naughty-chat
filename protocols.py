@@ -1,5 +1,28 @@
 import base64
 
+def get_protocol(protocol_name):
+	"""
+        Try to instantiate a protocol from the protocol_name.
+	If protocol_name is a list, this will return a list of the protocol found in the list.
+	If protocol_name is already an instance of Protocol, protocol_name is returned
+	protocol_name: The name of the protocol to instantiate.
+	throws: NameError, if the protocol is not found
+	returns: A Parser object|list of Parser object.
+	"""
+	if isinstance(protocol_name, list):
+		protocols = []
+		for v in protocol_name:
+			protocols.append(get_protocol(v))
+		return protocols
+	if isinstance(protocol_name, Protocol):
+		return protocol_name
+	try:
+		return globals()[protocol_name]()
+	except KeyError, e:
+		raise NameError("The parser '"+protocol_name+"' was not found. Is it properly defined in protocols.py? Is it correctly spelled?")
+
+
+
 class DataCouldNotBeReadError(Exception):
 	"""
 	This is raised whenever the socket returned an empty string.
