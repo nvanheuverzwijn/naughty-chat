@@ -1,0 +1,7 @@
+{
+	"bind_ip":"www.xxx.yyy.zzz",
+	"configuration_file":"FILEPATH",
+	"encoders":["List", "Of", "Encoder"],
+	"parser":"Parser",
+	"port":"9999"
+}
