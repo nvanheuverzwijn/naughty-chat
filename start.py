@@ -1,19 +1,18 @@
 #!/usr/bin/python
-import socket
 import os
-import select
 import sys
-import commands
-import parsers
-import clients
 import string
-import protocols
 import argparse
 import server
 import json
 
 def parse_configuration_file(path):
-	return json.load(open(path, "r"))
+	class Mock(object):
+		def __init__(self, kwargs):
+			self.__dict__.update(kwargs)
+			
+	json_data = json.load(open(path, "r"))
+	return Mock(json_data)
 
 parser = argparse.ArgumentParser(description="naughty-chat server")
 parser.add_argument("--port", default=9999, dest="port", metavar="PORT", type=int, help="the port to listen to")
