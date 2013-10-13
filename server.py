@@ -21,7 +21,7 @@ class Server(object):
 		return self._port
 	@port.setter
 	def port(self, value):
-		self._port = value
+		self._port = int(value)
 
 	@property
 	def bind(self):
