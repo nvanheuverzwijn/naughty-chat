@@ -13,8 +13,10 @@ class Server(object):
 
 	_port = 0
 	_bind = ""
+	_parser = None
 	_server_client = None
 	_clients = []
+	_encoders = []
 
 	@property
 	def port(self):
@@ -31,6 +33,19 @@ class Server(object):
 		self._bind = value
 	
 	@property
+	def parser(self):
+		return self._parser
+	@parser.setter
+	def parser(self, value):
+		if isinstance(value, parsers.Parser):
+			self._parser = value
+		else:
+			try:
+				self.parser = parsers.get_parser(value)
+			except NameError, e:
+				raise ValueError("parser value '"+str(value)+"' must be an instance of parsers.Parser or a string allowed by parsers.get_parser.")
+
+	@property
 	def server_client(self):
 		return self._server_client
 	@server_client.setter
@@ -41,15 +56,25 @@ class Server(object):
 	def clients(self):
 		return self._clients
 
-	def __init__(self, port=9999, bind="0.0.0.0", parser=None):
+	@property
+	def encoders(self):
+		return self._encoders
+	@encoders.setter
+	def encoders(self, value):
+		if not isinstance(value, list):
+			value = [value]
+		try:
+			self._encoders = protocols.get_protocol(value)
+		except NameError, e:
+			raise ValueError("Could not parse value.", e)
+
+
+	def __init__(self, port=9999, bind="0.0.0.0", parser="Parser", encoders=[]):
 		self.port = port
 		self.bind = bind
-		try:
-			self.parser = parsers.get_parser(parser)
-		except NameError, e:
-			print e.message 
-			print "Now using default parser"
-			self.parser = parsers.get_parser("Parser")
+		self.parser = parser
+		self.encoders = encoders
+
 	def whisp_client(self, message, client):
 		cmd = commands.Whisper(self, self.server_client, [client.name, message])
 		cmd.execute()
