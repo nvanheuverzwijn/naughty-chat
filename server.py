@@ -1,5 +1,6 @@
 import socket
 import os
+import ssl
 import select
 import sys
 import commands
@@ -17,6 +18,7 @@ class Server(object):
 	_server_client = None
 	_clients = []
 	_encoders = []
+	_ssl_configuration = {}
 
 	@property
 	def port(self):
@@ -68,12 +70,25 @@ class Server(object):
 		except NameError, e:
 			raise ValueError("Could not parse value.", e)
 
+	@property
+	def ssl_configuration(self):
+		return self._ssl_configuration
+	@ssl_configuration.setter
+	def ssl_configuration(self, value):
+		if not isinstance(value, dict):
+			raise ValueError("ssl_configuration must be a dict.")
 
-	def __init__(self, port=9999, bind="0.0.0.0", parser="Parser", encoders=[]):
+		self._ssl_configuration = value
+
+	def __init__(self, port=9999, bind="0.0.0.0", parser="Parser", encoders=[], ssl_configuration={}):
+		"""
+		ssl_configuration: this should be a dictionnary of ssl.wrap_socket function parameters.
+		"""
 		self.port = port
 		self.bind = bind
 		self.parser = parser
 		self.encoders = encoders
+		self.ssl_configuration = ssl_configuration
 
 	def whisp_client(self, message, client):
 		cmd = commands.Whisper(self, self.server_client, [client.name, message])
@@ -87,6 +102,7 @@ class Server(object):
 		client.socket.close()
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has left the chat!".format(client.name), [client.name]])
 		cmd.execute()
+
 	def kill(self):
 		"""Close all client connection and stop the server to listen WHITOUT warning the current connected clients."""
 		for client in self.clients:
@@ -100,7 +116,12 @@ class Server(object):
 		self.kill()
 
 	def listen(self):
-		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=self.encoders, socket=socket.socket(socket.AF_INET), server=self) 
+		server_socket = socket.socket(socket.AF_INET)
+
+		if self.ssl_configuration:
+			server_socket = ssl.wrap_socket(sock=server_socket, server_side=True, **self.ssl_configuration)
+
+		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=self.encoders, socket=server_socket, server=self) 
 		self.server_client.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.server_client.socket.bind((self.bind, self.port))
 		self.server_client.socket.listen(10)
@@ -119,6 +140,7 @@ class Server(object):
 		self.clients.append(client)
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(client.name), [client.name]])
 		cmd.execute()
+
 	def __handle_request(self, caller):
 		"""This is called whenever data is received from one of the client."""
 		try:

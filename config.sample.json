@@ -1,6 +1,17 @@
 {
 	"bind":"127.0.0.1",
-	"encoders":["Raw", "BaseSixtyFour"],
+	"encoders":["Raw"],
 	"parser":"Parser",
-	"port":"9999"
+	"port":"9999",
+	"ssl":
+	{
+		"keyfile":"certificate/server.key", 
+		"certfile":"certificate/server.crt",
+		"cert_reqs":"CERT_OPTIONAL", 
+		"ssl_version":"SSLv23", 
+		"ca_certs":"/etc/ssl/certs/ca-certificates.crt", 
+		"do_handshake_on_connect":true, 
+		"suppress_ragged_eofs":true,
+	       	"ciphers":"ALL"
+	}
 }
