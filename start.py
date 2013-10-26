@@ -31,7 +31,7 @@ if args.ssl:
 	if "cert_reqs" in args.ssl:
 		args.ssl["cert_reqs"] = getattr(ssl, args.ssl["cert_reqs"])
 	if "ssl_version" in args.ssl:
-		args.ssl["ssl_version"] = getattr(ssl, "PROTOCOL_"+args.ssl["ssl_version"])
+		args.ssl["ssl_version"] = getattr(ssl, args.ssl["ssl_version"])
 
 s = server.Server(parser=args.parser, port=args.port, bind=args.bind, encoders=args.encoders, ssl_configuration=args.ssl)
 try:
