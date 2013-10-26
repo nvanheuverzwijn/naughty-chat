@@ -87,13 +87,17 @@ class Server(object):
 		client.socket.close()
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has left the chat!".format(client.name), [client.name]])
 		cmd.execute()
-
-	def stop(self):
-		cmd = commands.Broadcast(self, self.server_client, ["I AM GOING DOWN."])
-		cmd.execute()
+	def kill(self):
+		"""Close all client connection and stop the server to listen WHITOUT warning the current connected clients."""
 		for client in self.clients:
 			self.disconnect_client(client)
 		self.server_client.socket.close()
+
+	def stop(self):
+		"""Warns the connected client that the server is going down then close all connection"""
+		cmd = commands.Broadcast(self, self.server_client, ["I AM GOING DOWN."])
+		cmd.execute()
+		self.kill()
 
 	def listen(self):
 		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=self.encoders, socket=socket.socket(socket.AF_INET), server=self) 
