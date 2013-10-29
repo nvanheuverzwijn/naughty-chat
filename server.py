@@ -135,8 +135,11 @@ class Server(object):
 					self.__handle_request(client)
 	def __handle_new_connection(self):
 		"""This is called whenever a new connection is initiated"""
-		socket, address = self.server_client.socket.accept()
-		client = clients.Client(ip=address[0], name=address[0], protocol=self.encoders, socket=socket, server=self)
+		try:
+			sock, address = self.server_client.socket.accept()
+		except socket.error, e:
+			print e
+		client = clients.Client(ip=address[0], name=address[0], protocol=self.encoders, socket=sock, server=self)
 		self.clients.append(client)
 		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(client.name), [client.name]])
 		cmd.execute()
