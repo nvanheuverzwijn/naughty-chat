@@ -13,7 +13,12 @@ def parse_configuration_file(kwdefault_args, path):
 			self.__dict__.update(kwdefault_args)
 			self.__dict__.update(kwargs)
 			
-	json_data = json.load(open(path, "r"))
+	try:
+		json_data = json.load(open(path, "r"))
+	except ValueError, e:
+		print "There seems to be an error in the configuration file '" + path + "'. Synthax error maybe? Here the exception message: '" + e.message + "'"
+		print "Default config shall be used."
+		json_data = {}
 	return Mock(kwdefault_args, json_data)
 
 parser = argparse.ArgumentParser(description="naughty-chat server")
