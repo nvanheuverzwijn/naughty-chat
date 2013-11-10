@@ -72,8 +72,13 @@ Commands
 ========
 commands.py contains commands that clients can execute. There commands are executed by the server with the help of the parser metadata.
 
+Logging
+=======
+The standard python module logging is used for logs.
+
 Configuration file sample
 =========================
+Log configuration has been ommitted because it is pretty large and it based off the standard python logging configuration that can be found <a href="http://docs.python.org/dev/library/logging.config.html">here</a>
 Basic server configuration file
 <pre>
 {
