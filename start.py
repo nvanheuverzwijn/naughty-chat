@@ -7,13 +7,14 @@ import server
 import json
 import ssl
 
-def parse_configuration_file(path):
+def parse_configuration_file(kwdefault_args, path):
 	class Mock(object):
-		def __init__(self, kwargs):
+		def __init__(self, kwdefault_args, kwargs):
+			self.__dict__.update(kwdefault_args)
 			self.__dict__.update(kwargs)
 			
 	json_data = json.load(open(path, "r"))
-	return Mock(json_data)
+	return Mock(kwdefault_args, json_data)
 
 parser = argparse.ArgumentParser(description="naughty-chat server")
 parser.add_argument("--port", default=9999, dest="port", metavar="PORT", type=int, help="the port to listen to")
@@ -23,10 +24,11 @@ parser.add_argument("--encoders", default=["Raw"], dest="encoders", metavar="ENC
 parser.add_argument("--ssl-configuration", default={}, dest="ssl", metavar="SSLCONF", type=json.loads, help="json object representing the ssl configuration i.e. '{\"keyfile\":\"/key/file\", etc..}'")
 parser.add_argument("--configuration-file", dest="configuration_file", metavar="FILEPATH", type=str, help="path to a json configuration file")
 
+# Parse default configuration
 args = parser.parse_args()
 if args.configuration_file:
-	args = parse_configuration_file(args.configuration_file)
-
+	args = parse_configuration_file(vars(args), args.configuration_file)
+# If ssl enabled, parse configuration ssl string value and get the corresponding enum value in the ssl package.
 if args.ssl:
 	if "cert_reqs" in args.ssl:
 		args.ssl["cert_reqs"] = getattr(ssl, args.ssl["cert_reqs"])
