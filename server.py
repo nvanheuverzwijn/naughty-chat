@@ -8,6 +8,7 @@ import parsers
 import clients
 import string
 import protocols
+import logging
 
 class Server(object):
 	"""The chat server. It relays communication between client."""
@@ -111,6 +112,7 @@ class Server(object):
 
 	def stop(self):
 		"""Warns the connected client that the server is going down then close all connection"""
+		logging.info("Server stopped")
 		cmd = commands.Broadcast(self, self.server_client, ["I AM GOING DOWN."])
 		cmd.execute()
 		self.kill()
@@ -119,12 +121,15 @@ class Server(object):
 		server_socket = socket.socket(socket.AF_INET)
 
 		if self.ssl_configuration:
+			logging.info("SSL mode is on")
 			server_socket = ssl.wrap_socket(sock=server_socket, server_side=True, **self.ssl_configuration)
 
 		self.server_client = clients.Client(ip="", name="[SERVER]", protocol=self.encoders, socket=server_socket, server=self) 
 		self.server_client.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.server_client.socket.bind((self.bind, self.port))
 		self.server_client.socket.listen(10)
+
+		logging.info( "Listenning started on '" + self.bind + "':'" + str(self.port) + "'")
 
 		while True:
 			inputready, outputready, exceptready = select.select(self.clients + [self.server_client],[],[])
@@ -133,7 +138,7 @@ class Server(object):
 					try:
 						self.__handle_new_connection()
 					except socket.error, e:
-						print e
+						logging.log(logging.ERROR, "Error occured while handling a new connection:'" + e.message + "'")
 				else:
 					self.__handle_request(client)
 	def __handle_new_connection(self):
@@ -148,7 +153,9 @@ class Server(object):
 		"""This is called whenever data is received from one of the client."""
 		try:
 			data = caller.receive()
+			logging.debug("Parsing this data: '" + data + "'")
 			result = self.parser.parse(data)
+			logging.debug("Result of parsing: '" + result.command_name + "(" + ",".join(result.command_arguments) + ")'")
 			cmd = commands.get_command(result.command_name, self, caller, result.command_arguments)
 			cmd.execute()
 		except commands.ArgumentsValidationError, e:
@@ -161,6 +168,8 @@ class Server(object):
 			cmd.execute()
 		except clients.SocketError, e:
 			#Client probably just disconnected.
+			logging.debug("SocketError while handling request.")
+			logging.exception(e)
 			self.disconnect_client(caller)
 		except clients.ClientIsNotFinishedSendingError, e:
 			#Client has not finished sending it's data.  
