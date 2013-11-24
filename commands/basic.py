@@ -1,87 +1,19 @@
-def get_command(command_name, server=None, caller=None, arguments=[]):
-	"""
-	Try to instantiate a command from the command_name
-	command_name: The name of the command to instantiate.
-	throws: NameError, if the command is not found
-	returns: A Command object.
-	"""
-	try:
-		return globals()[command_name](server, caller, arguments)
-	except KeyError, e:
-		raise NameError("The command '"+command_name+"' was not found. Is it properly defined in commands.py? Is it correctly spelled?")
-
-class ExecutionFailedError(Exception):
-	"""
-	Happens whenever a command raises an unhandled exception.
-	"""
-	pass
-class ArgumentsValidationError(Exception):
-	"""
-	Happens whenever arguments passed to the command are wrong.
-	"""
-	pass
-
-class Command(object):
-	_server = None
-	_caller = None
-	_arguments = []
-	
-	@property
-	def server(self):
-		"""The server in which this command is executed"""
-		return self._server
-	@server.setter
-	def server(self, value):
-		self._server = value
-
-	@property
-	def caller(self):
-		"""The Client representing the caller of this command"""
-		return self._caller
-	@caller.setter
-	def caller(self, value):
-		self._caller = value
-
-	@property
-	def arguments(self):
-		"""The arguments passed to the command"""
-		return self._arguments
-	@arguments.setter
-	def arguments(self, value):
-		self._arguments = value
-
-	def __init__(self, server = None, caller = None, arguments=[]):
-		self.server = server
-		self.caller = caller
-		self.arguments = arguments
-
-	def execute(self):
-		"""Overide this method"""
-		self._validate()
-		try:
-			self._execute()
-		except Exception, e:
-			raise ExecutionFailedError("Execution failed", e)
-
-	def _execute(self):
-		"""Overide this method"""
-		raise NotImplementedError()
-	def _validate(self):
-		"""Here, you get a chance to validate arguments"""
-		pass
-
+from . import Command
 class Help(Command):
 	"""
 	Provides the list of executable command.
 	"""
 	def _execute(self):
+		import os
+		import glob
 		import inspect
 		import sys
-		classes = inspect.getmembers(sys.modules[__name__], inspect.isclass) 
-		self.caller.send("Available commands are:")		
-		for class_info in classes:
-			if issubclass(class_info[1], Command) and class_info[0] != "Command":
-				self.caller.send("/"+class_info[0].lower())		
+		self.caller.send("Available commands are:")
+		for module in [os.path.basename(f)[:-3] for f in glob.glob(os.path.dirname(__file__)+"/*.py") if not os.path.basename(f).startswith('_')]:
+			classes = inspect.getmembers(sys.modules[__package__+"."+module], inspect.isclass) 
+			for class_info in classes:
+				if issubclass(class_info[1], Command) and class_info[0] != "Command":
+					self.caller.send("/"+class_info[0].lower())		
 
 class Exit(Command):
 	"""

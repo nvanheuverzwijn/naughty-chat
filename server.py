@@ -92,7 +92,7 @@ class Server(object):
 		self.ssl_configuration = ssl_configuration
 
 	def whisp_client(self, message, client):
-		cmd = commands.Whisper(self, self.server_client, [client.name, message])
+		cmd = commands.get_command("Whisper",self, self.server_client, [client.name, message])
 		cmd.execute()
 
 	def disconnect_client(self, client):
@@ -101,7 +101,7 @@ class Server(object):
 		"""
 		self.clients.remove(client)
 		client.socket.close()
-		cmd = commands.Broadcast(self, self.server_client, ["{0} has left the chat!".format(client.name), [client.name]])
+		cmd = commands.get_command("Broadcast", self, self.server_client, ["{0} has left the chat!".format(client.name), [client.name]])
 		cmd.execute()
 
 	def kill(self):
@@ -113,7 +113,7 @@ class Server(object):
 	def stop(self):
 		"""Warns the connected client that the server is going down then close all connection"""
 		logging.info("Server stopped")
-		cmd = commands.Broadcast(self, self.server_client, ["I AM GOING DOWN."])
+		cmd = commands.get_command("Broadcast", self, self.server_client, ["I AM GOING DOWN."])
 		cmd.execute()
 		self.kill()
 
@@ -146,7 +146,7 @@ class Server(object):
 		sock, address = self.server_client.socket.accept()
 		client = clients.Client(ip=address[0], name=address[0], protocol=self.encoders, socket=sock, server=self)
 		self.clients.append(client)
-		cmd = commands.Broadcast(self, self.server_client, ["{0} has joined the chat!".format(client.name), [client.name]])
+		cmd = commands.get_command("Broadcast", self, self.server_client, ["{0} has joined the chat!".format(client.name), [client.name]])
 		cmd.execute()
 
 	def __handle_request(self, caller):
@@ -160,12 +160,13 @@ class Server(object):
 			cmd.execute()
 		except commands.ArgumentsValidationError, e:
 			#Command arguments did not validate.
-			cmd = commands.Whisper(self, self.server_client, [caller.name, e.message])
+			cmd = commands.get_command("Whisper", self, self.server_client, [caller.name, e.message])
 			cmd.execute()
 		except commands.ExecutionFailedError, e:
 			#Tell the client that the command could not be executed properly.
-			cmd = commands.Whisper(self, self.server_client, [caller.name, "Command execution failed"])
+			cmd = commands.get_command("Whisper", self, self.server_client, [caller.name, "Command execution failed"])
 			cmd.execute()
+			logging.exception(e)
 		except clients.SocketError, e:
 			#Client probably just disconnected.
 			logging.debug("SocketError while handling request.")
@@ -176,5 +177,5 @@ class Server(object):
 			pass
 		except NameError, e:
 			# The command is not recognized.
-			cmd = commands.Whisper(self, self.server_client, [caller.name, "Unrecognized command"])
+			cmd = commands.get_command("Whisper", self, self.server_client, [caller.name, "Unrecognized command"])
 			cmd.execute()
