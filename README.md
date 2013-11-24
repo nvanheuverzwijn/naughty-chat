@@ -70,7 +70,7 @@ parsers.py contains the parser of data that the protocol returns and return meta
 
 Commands
 ========
-commands.py contains commands that clients can execute. There commands are executed by the server with the help of the parser metadata.
+commands package contains modules which contains commands that clients can execute. There commands are executed by the server with the help of the parser metadata. If you ever add new module with new commands, make sure that these commands are not in conflict with the currently available command.
 
 Logging
 =======
