@@ -17,9 +17,9 @@ def parse_configuration_file(kwdefault_args, path):
 			
 	try:
 		json_data = json.load(open(path, "r"))
-	except ValueError, e:
-		print "There seems to be an error in the configuration file '" + path + "'. Synthax error maybe? Here the exception message: '" + e.message + "'"
-		print "Default config shall be used."
+	except ValueError as e:
+		print("There seems to be an error in the configuration file '" + path + "'. Synthax error maybe? Here the exception message: '" + e.message + "'")
+		print("Default config shall be used.")
 		json_data = {}
 	return Mock(kwdefault_args, json_data)
 
@@ -58,11 +58,11 @@ s = server.Server(parser=args.parser, port=args.port, bind=args.bind, encoders=a
 
 try:
 	s.listen()
-except KeyboardInterrupt, e:
+except KeyboardInterrupt as e:
 	pass
 except Exception as e:
 	logging.exception(e)
-	print e
+	print(e)
 finally:
 	s.stop()
 

@@ -66,7 +66,7 @@ class Command(object):
 		self._validate()
 		try:
 			self._execute()
-		except Exception, e:
+		except Exception as e:
 			raise ExecutionFailedError("Execution failed", e)
 
 	def _execute(self):

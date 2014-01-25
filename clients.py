@@ -76,9 +76,9 @@ class Client(object):
 					data = protocol.decode(data)
 			
 			return data
-		except protocols.ProtocolIsNotRespectedError, e:
+		except protocols.ProtocolIsNotRespectedError as e:
 			raise ClientIsNotFinishedSendingError("The client is not finished sending it's message.", e)
-		except protocols.DataCouldNotBeReadError, e:
+		except protocols.DataCouldNotBeReadError as e:
 			raise SocketError("Client socket died", e)
 			
 	def send(self,data):
@@ -90,9 +90,9 @@ class Client(object):
 				for protocol in reversed(self.protocol[1:]):
 					data = protocol.encode(data)
 			self.protocol[0].sendTcpSocket(data, self.socket)
-		except protocols.ProtocolIsNotRespectedError, e:
+		except protocols.ProtocolIsNotRespectedError as e:
 			raise CouldNotSendRequestError("", e)
-		except Exception, e:
+		except Exception as e:
 			raise SocketError("Client socket died", e)
 
 	def fileno(self):

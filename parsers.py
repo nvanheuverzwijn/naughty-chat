@@ -7,7 +7,7 @@ def get_parser(parser_name):
 	"""
 	try:
 		return globals()[parser_name]()
-	except KeyError, e:
+	except KeyError as e:
 		raise NameError("The parser '"+parser_name+"' was not found. Is it properly defined in parsers.py? Is it correctly spelled?")
 
 class Result(object):

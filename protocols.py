@@ -18,7 +18,7 @@ def get_protocol(protocol_name):
 		return protocol_name
 	try:
 		return globals()[protocol_name]()
-	except KeyError, e:
+	except KeyError as e:
 		raise NameError("The parser '"+protocol_name+"' was not found. Is it properly defined in protocols.py? Is it correctly spelled?")
 
 
@@ -61,7 +61,7 @@ class Protocol(object):
 		"""
 		This is called when the server wants to read data from a client.
 		"""
-		self.fetched_data += socket.recv(self.buffer_size)
+		self.fetched_data += socket.recv(self.buffer_size).decode('utf8')
 		if self.fetched_data == "":
 			raise DataCouldNotBeReadError("Socket returned empty string.") 
 		decoded_data = self.decode(self.fetched_data)
@@ -71,7 +71,7 @@ class Protocol(object):
 		"""
 		This is called when the server wants to send data to a client.
 		"""
-		socket.sendall(self.encode(data))
+		socket.sendall(bytes(self.encode(data), "UTF-8"))
 
 	def encode(self, data):
 		"""
@@ -99,7 +99,7 @@ class Raw(Protocol):
 	def encode(self, data):
 		try:
 			data += "\n"
-		except Exception, e:
+		except Exception as e:
 			raise ProtocolIsNotRespectedError("Could not append \\n to the data.", e)
 		return data
 
@@ -112,11 +112,11 @@ class BaseSixtyFour(Protocol):
 	def encode(self, data):
 		try:
 			return base64.b64encode(data)
-		except Exception, e:
+		except Exception as e:
 			raise ProtocolIsNotRespectedError("Could not encode the data received to base64 using `base64` module.", e)
 	def decode(self, data):
 		try:
 			return base64.b64decode(data)
-		except TypeError, e:
+		except TypeError as e:
 			raise ProtocolIsNotRespectedError("Could not decode the data received using `base64` module.", e)
 

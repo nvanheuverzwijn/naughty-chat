@@ -45,7 +45,7 @@ class Server(object):
 		else:
 			try:
 				self.parser = parsers.get_parser(value)
-			except NameError, e:
+			except NameError as e:
 				raise ValueError("parser value '"+str(value)+"' must be an instance of parsers.Parser or a string allowed by parsers.get_parser.")
 
 	@property
@@ -68,7 +68,7 @@ class Server(object):
 			value = [value]
 		try:
 			self._encoders = protocols.get_protocol(value)
-		except NameError, e:
+		except NameError as e:
 			raise ValueError("Could not parse value.", e)
 
 	@property
@@ -137,8 +137,8 @@ class Server(object):
 				if client == self.server_client:
 					try:
 						self.__handle_new_connection()
-					except socket.error, e:
-						logging.log(logging.ERROR, "Error occured while handling a new connection:'" + e.message + "'")
+					except socket.error as e:
+						logging.log(logging.ERROR, "Error occured while handling a new connection:'" + str(e) + "'")
 				else:
 					self.__handle_request(client)
 	def __handle_new_connection(self):
@@ -158,24 +158,26 @@ class Server(object):
 			logging.debug("Result of parsing: '" + result.command_name + "(" + ",".join(result.command_arguments) + ")'")
 			cmd = commands.get_command(result.command_name, self, caller, result.command_arguments)
 			cmd.execute()
-		except commands.ArgumentsValidationError, e:
+		except commands.ArgumentsValidationError as e:
 			#Command arguments did not validate.
-			cmd = commands.get_command("Whisper", self, self.server_client, [caller.name, e.message])
+			print(e)
+			print("asdasdasdasd")
+			cmd = commands.get_command("Whisper", self, self.server_client, [caller.name, str(e)])
 			cmd.execute()
-		except commands.ExecutionFailedError, e:
+		except commands.ExecutionFailedError as e:
 			#Tell the client that the command could not be executed properly.
 			cmd = commands.get_command("Whisper", self, self.server_client, [caller.name, "Command execution failed"])
 			cmd.execute()
 			logging.exception(e)
-		except clients.SocketError, e:
+		except clients.SocketError as e:
 			#Client probably just disconnected.
 			logging.debug("SocketError while handling request.")
 			logging.exception(e)
 			self.disconnect_client(caller)
-		except clients.ClientIsNotFinishedSendingError, e:
+		except clients.ClientIsNotFinishedSendingError as e:
 			#Client has not finished sending it's data.  
 			pass
-		except NameError, e:
+		except NameError as e:
 			# The command is not recognized.
 			cmd = commands.get_command("Whisper", self, self.server_client, [caller.name, "Unrecognized command"])
 			cmd.execute()

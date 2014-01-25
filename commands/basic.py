@@ -1,4 +1,6 @@
 from . import Command
+from . import ArgumentsValidationError
+
 class Help(Command):
 	"""
 	Provides the list of executable command.
