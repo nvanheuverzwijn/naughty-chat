@@ -1,7 +1,7 @@
 naughty-chat
 ============
 
-Simple chat in python 2.7.5.
+Simple chat in python 3.3.3.
 
 Usage
 =====
