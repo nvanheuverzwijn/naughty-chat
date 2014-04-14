@@ -122,5 +122,10 @@ FAQ
 ===
 
 Q:How do I color my text ?
+
 A:Pat shall answer us on that matter :
 ![alt tag](https://raw.githubusercontent.com/nvanheuverzwijn/naughty-chat/master/doc/how-to-color.png)
+
+Q:How do I translate french ?
+
+A: Use google translate and hope Pat writes correct french.
