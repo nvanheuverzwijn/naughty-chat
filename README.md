@@ -118,3 +118,9 @@ Basic Server with multiple encoders
 }
 </pre>
 
+FAQ
+===
+
+Q:How do I color my text ?
+A:Pat shall answer us on that matter :
+![alt tag](https://raw.githubusercontent.com/nvanheuverzwijn/naughty-chat/master/doc/how-to-color.png)
